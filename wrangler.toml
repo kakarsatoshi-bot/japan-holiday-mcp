@@ -6,6 +6,7 @@ name = "japan-holiday-mcp"
 main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
+account_id = "166bb123f41e16dfca50c0874bc43cde"
 
 [observability]
 enabled = true
@@ -17,4 +18,4 @@ bindings = [
 
 [[migrations]]
 tag = "v1"
-new_classes = ["JapanHolidayMcpAgent"]
+new_sqlite_classes = ["JapanHolidayMcpAgent"]
