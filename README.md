@@ -78,3 +78,12 @@ npx wrangler deploy
 ## ライセンス / License
 
 MIT
+
+
+## 🔗 Related MCPs (Japan Data Series)
+
+| MCP | Description |
+|---|---|
+| [japan-holiday-mcp](https://github.com/kakarsatoshi-bot/japan-holiday-mcp) | Japanese national holidays |
+| [japan-weather-mcp](https://github.com/kakarsatoshi-bot/japan-weather-mcp) | Japan weather forecast (JMA) |
+| [japan-realestate-mcp](https://github.com/kakarsatoshi-bot/japan-realestate-mcp) | Japan real estate transaction prices (MLIT) |
