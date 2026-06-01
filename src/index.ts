@@ -1,33 +1,31 @@
-/**
- * MCP Server Template（Supabaseなし・最小構成版）
- *
- * 【カスタマイズ手順】
- * 1. wrangler.toml の name を変更
- * 2. "MyMcpAgent" を自分のサーバー名に変更
- * 3. "your-mcp-server" をサーバー名に変更
- * 4. 自分のツールを追加
- */
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { pingToolDefinition, handlePing } from "./tools/ping";
-import { sampleToolDefinition, handleSampleTool } from "./tools/sample_tool";
 import { withLogging } from "./utils/logger";
 
+import { pingToolDefinition, handlePing } from "./tools/ping";
+import { isHolidayToolDefinition, handleIsHoliday } from "./tools/is_holiday";
+import {
+  getHolidaysInMonthToolDefinition,
+  handleGetHolidaysInMonth,
+} from "./tools/get_holidays_in_month";
+import {
+  getNextHolidaysToolDefinition,
+  handleGetNextHolidays,
+} from "./tools/get_next_holidays";
+
 export interface Env {
-  MyMcpAgent: DurableObjectNamespace;
-  // 必要な環境変数があればここに追加
-  // EXAMPLE_API_KEY: string;
+  JapanHolidayMcpAgent: DurableObjectNamespace;
 }
 
-export class MyMcpAgent extends McpAgent<Env> {
+export class JapanHolidayMcpAgent extends McpAgent<Env> {
   server = new McpServer({
-    name: "your-mcp-server",  // ← 変更してください
+    name: "japan-holiday-mcp",
     version: "1.0.0",
   });
 
   async init() {
-    // ping（接続テスト）
+    // ── Tool 1: ping ──────────────────────────────────────────
     this.server.registerTool(
       pingToolDefinition.name,
       {
@@ -41,49 +39,119 @@ export class MyMcpAgent extends McpAgent<Env> {
         },
       },
       async ({ message }) => ({
-        content: [{
-          type: "text",
-          text: await withLogging("ping", { message }, () => handlePing({ message })),
-        }],
+        content: [
+          {
+            type: "text",
+            text: await withLogging("ping", { message }, () =>
+              handlePing({ message })
+            ),
+          },
+        ],
       })
     );
 
-    // サンプルツール（カスタマイズしてください）
+    // ── Tool 2: is_holiday ────────────────────────────────────
     this.server.registerTool(
-      sampleToolDefinition.name,
+      isHolidayToolDefinition.name,
       {
-        description: sampleToolDefinition.description,
+        description: isHolidayToolDefinition.description,
         inputSchema: {
-          input: z.string().describe("入力値"),
+          date: z
+            .string()
+            .describe("Date to check in YYYY-MM-DD format (e.g. '2026-01-01')"),
         },
         annotations: {
           readOnlyHint: true,
           destructiveHint: false,
           idempotentHint: true,
-          openWorldHint: false,
+          openWorldHint: true,
         },
       },
-      async ({ input }) => ({
-        content: [{
-          type: "text",
-          text: await withLogging("sample_tool", { input },
-            () => handleSampleTool({ input })
-          ),
-        }],
+      async ({ date }) => ({
+        content: [
+          {
+            type: "text",
+            text: await withLogging("is_holiday", { date }, () =>
+              handleIsHoliday({ date })
+            ),
+          },
+        ],
+      })
+    );
+
+    // ── Tool 3: get_holidays_in_month ─────────────────────────
+    this.server.registerTool(
+      getHolidaysInMonthToolDefinition.name,
+      {
+        description: getHolidaysInMonthToolDefinition.description,
+        inputSchema: {
+          year: z.number().describe("Year (e.g. 2026)"),
+          month: z.number().describe("Month as a number 1–12"),
+        },
+        annotations: {
+          readOnlyHint: true,
+          destructiveHint: false,
+          idempotentHint: true,
+          openWorldHint: true,
+        },
+      },
+      async ({ year, month }) => ({
+        content: [
+          {
+            type: "text",
+            text: await withLogging("get_holidays_in_month", { year, month }, () =>
+              handleGetHolidaysInMonth({ year, month })
+            ),
+          },
+        ],
+      })
+    );
+
+    // ── Tool 4: get_next_holidays ─────────────────────────────
+    this.server.registerTool(
+      getNextHolidaysToolDefinition.name,
+      {
+        description: getNextHolidaysToolDefinition.description,
+        inputSchema: {
+          count: z
+            .number()
+            .optional()
+            .describe("Number of upcoming holidays to return (default: 3)"),
+        },
+        annotations: {
+          readOnlyHint: true,
+          destructiveHint: false,
+          idempotentHint: false,
+          openWorldHint: true,
+        },
+      },
+      async ({ count }) => ({
+        content: [
+          {
+            type: "text",
+            text: await withLogging("get_next_holidays", { count }, () =>
+              handleGetNextHolidays({ count })
+            ),
+          },
+        ],
       })
     );
   }
 }
 
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(
+    request: Request,
+    env: Env,
+    ctx: ExecutionContext
+  ): Promise<Response> {
     const url = new URL(request.url);
 
     if (url.pathname === "/health") {
       return new Response(
         JSON.stringify({
           status: "ok",
-          server: "your-mcp-server",
+          server: "japan-holiday-mcp",
           version: "1.0.0",
           timestamp: new Date().toISOString(),
         }),
@@ -92,12 +160,14 @@ export default {
     }
 
     if (url.pathname === "/mcp") {
-      return MyMcpAgent.serve("/mcp").fetch(request, env, ctx);
+      return JapanHolidayMcpAgent.serve("/mcp").fetch(request, env, ctx);
     }
 
     return new Response(
       JSON.stringify({
-        name: "MCP Server Template (minimal)",
+        name: "Japan Holiday MCP",
+        description:
+          "Japanese national holiday information via Cabinet Office official data",
         mcp_endpoint: "/mcp",
         health_endpoint: "/health",
       }),

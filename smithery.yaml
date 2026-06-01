@@ -1,0 +1,27 @@
+version: 1
+name: japan-holiday-mcp
+displayName: "Japan Holiday MCP"
+description: "Check Japanese national holidays powered by official Cabinet Office data. Ask: Is today a holiday? List all holidays in a month. Find the next upcoming holidays."
+category: data
+tags:
+  - japan
+  - holiday
+  - calendar
+  - national-holiday
+  - japanese-culture
+  - date-utility
+
+# Remote MCP server (Cloudflare Workers)
+install:
+  type: remote
+  url: https://japan-holiday-mcp.tsukuras-jp.workers.dev/mcp
+
+# Metadata
+author: Tsukuras
+homepage: https://tsukuras.jp
+repository: https://github.com/kakarsatoshi-bot/japan-holiday-mcp
+license: MIT
+
+# Documentation
+documentation:
+  readme: README.md

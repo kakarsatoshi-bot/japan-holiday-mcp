@@ -1,7 +1,7 @@
 {
-  "name": "mcp-template",
+  "name": "japan-holiday-mcp",
   "version": "1.0.0",
-  "description": "Minimal MCP server template — Cloudflare Workers + TypeScript",
+  "description": "Japan national holiday MCP server — powered by Cabinet Office official CSV data",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy"

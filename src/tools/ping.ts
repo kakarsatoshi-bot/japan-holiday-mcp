@@ -1,15 +1,12 @@
-/**
- * Ping Tool（接続テスト用）
- */
 export const pingToolDefinition = {
   name: "ping",
-  description: "サーバーの接続テスト用ツールです。",
+  description: "Test connectivity to the Japan Holiday MCP server and confirm it is running.",
   inputSchema: {
     type: "object" as const,
     properties: {
       message: {
         type: "string",
-        description: "エコーバックするメッセージ（任意）",
+        description: "Optional message to echo back",
       },
     },
     required: [],
@@ -17,7 +14,10 @@ export const pingToolDefinition = {
 };
 
 export async function handlePing(args: { message?: string }): Promise<string> {
-  return args.message
-    ? `pong! Echo: ${args.message}`
-    : "pong! サーバーは正常に動作しています。";
+  return JSON.stringify({
+    status: "ok",
+    server: "japan-holiday-mcp",
+    version: "1.0.0",
+    message: args.message ? `Echo: ${args.message}` : "pong",
+  });
 }
