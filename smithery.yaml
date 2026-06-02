@@ -1,7 +1,7 @@
 version: 1
 name: japan-holiday-mcp
 displayName: "Japan Holiday MCP"
-description: "Check Japanese national holidays powered by official Cabinet Office data. Ask: Is today a holiday? List all holidays in a month. Find the next upcoming holidays."
+description: "Get Japanese national holidays and substitute holidays from the Cabinet Office (内閣府). Check if a date is a holiday, list holidays by month, or get upcoming holidays."
 category: data
 tags:
   - japan
